@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+
+from navigate_strategy import navigate_info
 
 app = FastAPI()
 
@@ -10,4 +13,7 @@ async def root():
 
 @app.get("/hello/{name}")
 async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+    if name in navigate_info:
+        return FileResponse(navigate_info[name])
+    else:
+        return {"message": f"Hello {name}"}
