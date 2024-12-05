@@ -1,9 +1,7 @@
-# from urllib import request
-
 from fastapi import FastAPI, Form
 from fastapi.responses import FileResponse
 
-from navigate_strategy import navigate_info
+from app.navigate_strategy import navigate_info
 
 app = FastAPI()
 
