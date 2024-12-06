@@ -4,7 +4,7 @@ from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import ValidationError
 
-from app.navigate_strategy import navigate_info
+from app.routes.navigate_strategy import navigate_info
 from app.models.models import User
 
 app = FastAPI()

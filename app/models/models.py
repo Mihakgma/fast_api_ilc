@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from typing import List, Union
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, computed_field
 
 from app.classes.id_maker import IdMaker
 from app.funct.refine_phone_number import refine_phone_number
@@ -17,9 +17,17 @@ class User(BaseModel):
     email: str = "ivan_ivanch@sibir.ru"
     password: str = "1234"
     phone: str = "0123456789"
-    department: str = "OKG"
+    department: str = ""
     roles: List[int] = [1, 2, 3]
     info: str = "some information"
+
+    @computed_field
+    @property
+    def is_adult(self) -> bool:
+        today = date.today()
+        if self.birth_date is not None:
+            print("is adult property worked")
+            return (today - self.birth_date.date()).days >= (18 * 365.25)
 
     @field_validator("first_name")
     @classmethod
