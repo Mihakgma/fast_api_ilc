@@ -32,17 +32,18 @@ async def say_hello(name: str):
 
 
 @app.post("/hello/calculate")
-def calculate(num1: int = Form(ge=0, lt=111111), num2: int = Form(ge=0, lt=111111)):
+async def calculate(num1: int = Form(ge=0, lt=111111), num2: int = Form(ge=0, lt=111111)):
     print("num1 =", num1, "   num2 =", num2)
     return {"result": num1 + num2}
 
 
 @app.post("/hello/create_new_user")
-def create_new_user(first_name: str = Form(),
-                    birth_date: str = Form()):
+async def create_new_user(first_name: str = Form(),
+                          birth_date: str = Form(),
+                          phone: str = Form(),):
     try:
         birth_date = datetime.datetime.fromisoformat(birth_date)  # Explicit conversion
-        user = User(first_name=first_name, birth_date=birth_date)
+        user = User(first_name=first_name, birth_date=birth_date, phone=phone)
         user_info = "   ".join([f"{k}: {v}" for (k, v) in user.dict().items()])
         return {"user_info &#10;": user_info}
     except ValidationError as e:

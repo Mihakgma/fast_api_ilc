@@ -1,14 +1,15 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import List, Union
 
-from pydantic import BaseModel
-from pydantic.v1 import validator
+from pydantic import BaseModel, field_validator
+
+from app.classes.id_maker import IdMaker
+from app.funct.refine_phone_number import refine_phone_number
 
 
 class User(BaseModel):
-    id = 0
 
-    id: int
+    id: int = IdMaker.get_id('User')
     first_name: str = "Иван"
     surname: str = "Иванович"
     last_name: str = "Иванов"
@@ -20,31 +21,34 @@ class User(BaseModel):
     roles: List[int] = [1, 2, 3]
     info: str = "some information"
 
+    @field_validator("first_name")
     @classmethod
-    def get_id(cls):
-        cls.next_id = getattr(cls, 'next_id', 0) + 1
-        return cls.next_id
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not hasattr(self, 'id'):  # This handles the cases where the id is not provided
-            self.id = self.__class__.get_id()
-
-    @validator("first_name")
-    def check_first_name_length(self, v):
-        if len(v) > 50:  # Adjust 50 as needed
-            raise ValueError("First name must be at most 50 characters.")
+    def check_first_name_length(cls, v) -> str:
+        max_length = 30
+        if len(v) > max_length:
+            raise ValueError(f"First name must be at most <{max_length}> characters.")
         return v
 
-    @validator("birth_date")
-    def check_birth_date(self, v):
-        min_date = datetime(1900, 1, 1)  # Adjust as needed
+    @field_validator("phone")
+    @classmethod
+    def check_phone(cls, v: str) -> str:
+        max_length = 12
+        v = refine_phone_number(v)
+        if len(v) > max_length:
+            raise ValueError(f"Phone number must be at most <{max_length}> characters.")
+        return v
+
+    @field_validator("birth_date")
+    @classmethod
+    def check_birth_date(cls, v) -> date:
+        min_date = datetime(1900, 1, 1)
+        today = datetime.combine(date.today(), datetime.min.time())
         if v and v < min_date:
             raise ValueError(f"Birth date must be after {min_date.strftime('%Y-%m-%d')}.")
+        elif v and v > today:
+            raise ValueError(f"Birth date cannot be after {today.strftime('%Y-%m-%d')}.")
         elif v and v >= min_date:
-            print("OK")
-            print(f"Birth date is {v}.")
+            print(f"OK! Birth date is {v}.")
         else:
-            print("NOT OK")
-            print(f"Birth date is {v}.")
+            print(f"NOT OK! Birth date is {v}.")
         return v
