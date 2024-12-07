@@ -1,5 +1,7 @@
 import datetime
 
+import uvicorn
+
 from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import ValidationError
@@ -83,6 +85,4 @@ async def create_new_user(first_name: str = Form(),
 
 
 if __name__ == "main":
-    import uvicorn
-
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run("main:app", host='127.0.0.1', port=8000, reload=True, workers=3)
