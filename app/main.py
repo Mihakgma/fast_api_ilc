@@ -45,10 +45,15 @@ async def create_new_user(first_name: str = Form(),
         birth_date = datetime.datetime.fromisoformat(birth_date)  # Explicit conversion
         user = User(first_name=first_name, birth_date=birth_date, phone=phone)
         user_info = "   ".join([f"{k}: {v}" for (k, v) in user.dict().items()])
-        return {"user_info &#10;": user_info}
+        return {"user_info: ": user_info}
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))  # Unprocessable Entity
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid date format: {e}")  # Bad Request
     except Exception as e:  # Catch other unexpected exceptions
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")  # Internal Server Error
+
+
+if __name__ == "main":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)
