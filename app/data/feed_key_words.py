@@ -1,0 +1,42 @@
+positive_keywords: list[str] = [
+    "респект",
+    "крут",
+    "супер",
+    "отличн",
+    "хорош",
+    "благодар",
+    "доходчив",
+    "компетентн",
+    "нравил",
+    "cool",
+    "like",
+    "love",
+    "hug",
+    "thx",
+    "thanks",
+    "thank",
+    "super",
+    "excellen",
+    "great"
+]
+
+negative_keywords: list[str] = [
+    "кек",
+    "шняга",
+    "хрен",
+    "шляпа",
+    "дура",
+    "странн",
+    "потеря",
+    "инфоцыган",
+    "плохо",
+    "shit",
+    "loss",
+    "fuck",
+    "retard",
+    "bastard",
+    "ass",
+    "mother",
+    "dislike",
+    "hell"
+]

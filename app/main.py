@@ -3,19 +3,26 @@ import datetime
 import uvicorn
 
 from fastapi import FastAPI, Form, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import ValidationError
 
+from app.data.fake_dbs import feedbacks_db, fake_db
 from app.routes.navigate_strategy import navigate_info
-from app.models.models import User
+from app.models.user import User
+from app.models.feedback import Feedback
 
 app = FastAPI()
 
-fake_db = [{"user_name": "vasya", "user_info": "любит колбасу"},
-           {"user_name": "katya", "user_info": "любит петь"},
-           {"user_name": "gladiko", "user_info": "likes pizza"},
-           {"user_name": "ilon musk", "user_info": "likes tesla"},
-           {"user_name": "pashka durov", "user_info": "likes telega"}]
+
+@app.post('/feedback/')
+async def get_feedback(feedback: Feedback) -> JSONResponse:
+    feedbacks_db.append(feedback())
+    return JSONResponse(content={"message": f"Feedback received. Thank you, {feedback.name}!"})
+
+
+@app.get('/get_all_feedbacks/')
+async def get_all_feedbacks(limit: int = 3) -> list[dict[str, str]]:
+    return feedbacks_db[:limit]
 
 
 @app.get("/users/{user_idx}")
