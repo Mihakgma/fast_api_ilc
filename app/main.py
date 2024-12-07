@@ -10,12 +10,22 @@ from app.models.models import User
 app = FastAPI()
 
 fake_db = [{"user_name": "vasya", "user_info": "любит колбасу"},
-           {"user_name": "katya", "user_info": "любит петь"}]
+           {"user_name": "katya", "user_info": "любит петь"},
+           {"user_name": "gladiko", "user_info": "likes pizza"},
+           {"user_name": "ilon musk", "user_info": "likes tesla"},
+           {"user_name": "pashka durov", "user_info": "likes telega"}]
+
+
+@app.get("/users/{user_idx}")
+def read_user(user_idx: int):
+    if user_idx in [i for i in range(len(fake_db))]:
+        return fake_db[user_idx]
+    return {"error": f"Sorry. User with index <{user_idx}> has not been found..."}
 
 
 @app.get('/users')
-async def get_all_users():
-    return fake_db
+async def get_all_users(limit: int = 3):
+    return fake_db[:limit]
 
 
 @app.post('/add_user')
@@ -58,7 +68,7 @@ async def calculate(num1: int = Form(ge=0, lt=111111), num2: int = Form(ge=0, lt
 @app.post("/hello/create_new_user")
 async def create_new_user(first_name: str = Form(),
                           birth_date: str = Form(),
-                          phone: str = Form(),):
+                          phone: str = Form(), ):
     try:
         birth_date = datetime.datetime.fromisoformat(birth_date)  # Explicit conversion
         user = User(first_name=first_name, birth_date=birth_date, phone=phone)
@@ -74,4 +84,5 @@ async def create_new_user(first_name: str = Form(),
 
 if __name__ == "main":
     import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=8000)
