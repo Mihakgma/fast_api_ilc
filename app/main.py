@@ -9,6 +9,24 @@ from app.models.models import User
 
 app = FastAPI()
 
+fake_db = [{"user_name": "vasya", "user_info": "любит колбасу"},
+           {"user_name": "katya", "user_info": "любит петь"}]
+
+
+@app.get('/users')
+async def get_all_users():
+    return fake_db
+
+
+@app.post('/add_user')
+async def add_user(user_name: str,
+                   user_info: str):
+    new_user_info = {"user_name": user_name, "user_info": user_info}
+    if new_user_info in fake_db:
+        return {"message": f"юзер <{user_name}> УЖЕ СОДЕРЖИТСЯ в базе данных!"}
+    fake_db.append(new_user_info)
+    return {"message": f"юзер <{user_name}> успешно добавлен в базу данных"}
+
 
 @app.get("/")
 async def root():
