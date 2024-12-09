@@ -1,12 +1,14 @@
 import datetime
+from typing import Annotated
 
 import uvicorn
 
-from fastapi import FastAPI, Form, HTTPException
+from fastapi import FastAPI, Form, HTTPException, File, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import ValidationError
 
 from app.data.fake_dbs import feedbacks_db, fake_db
+# from app.models.upload_excel_file import UploadExcelFile
 from app.routes.navigate_strategy import navigate_info
 from app.models.user import User
 from app.models.feedback import Feedback
@@ -89,6 +91,21 @@ async def create_new_user(first_name: str = Form(),
         raise HTTPException(status_code=400, detail=f"Invalid date format: {e}")  # Bad Request
     except Exception as e:  # Catch other unexpected exceptions
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")  # Internal Server Error
+
+
+@app.post("/files/")
+async def create_file(file: Annotated[bytes, File()]):
+    return {"file_size": len(file)}
+
+
+@app.post("/uploadfile/")
+async def create_upload_file(file: UploadFile):
+    return {"filename": file.filename}
+
+
+# @app.post("/uploadfile/{file}/")
+# async def excel_df_info(file: UploadExcelFile):
+#     return {"df_info": file.df_info}
 
 
 if __name__ == "main":
