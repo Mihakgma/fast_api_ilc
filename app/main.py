@@ -102,7 +102,8 @@ async def create_file(file: Annotated[bytes, File()]):
 async def create_upload_file(file: UploadFile):
     return {"filename": file.filename}
 
-
+# НЕОБХОДИМО РАЗОБРАТЬСЯ - КАКОЙ-ТО КОНФЛИКТ СО СХЕМАМИ - ПОДГРУЗКА ФАЙЛА ЧЕРЕЗ
+# ПОТОК БАЙТОВЫХ ДАННЫХ ??? ГУГЛИТЬ!!!
 # @app.post("/uploadfile/{file}/")
 # async def excel_df_info(file: UploadExcelFile):
 #     return {"df_info": file.df_info}
