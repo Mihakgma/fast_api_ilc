@@ -1,15 +1,17 @@
 from datetime import datetime, date
 from typing import List, Union
 
+# from fastapi.dependencies import models
 from pydantic import BaseModel, field_validator, computed_field
 
 from app.classes.id_maker import IdMaker
 from app.funct.refine_phone_number import refine_phone_number
+from app.models.department import Department
 
 
 class User(BaseModel):
 
-    id: int = IdMaker.get_id('User')
+    id: int = IdMaker.get_id("User")
     first_name: str = "Иван"
     surname: str = "Иванович"
     last_name: str = "Иванов"
@@ -17,7 +19,7 @@ class User(BaseModel):
     email: str = "ivan_ivanch@sibir.ru"
     password: str = "1234"
     phone: str = "0123456789"
-    department: str = ""
+    department: int = Department
     roles: List[int] = [1, 2, 3]
     info: str = "some information"
 
@@ -60,3 +62,6 @@ class User(BaseModel):
         else:
             print(f"NOT OK! Birth date is {v}.")
         return v
+
+    def __str__(self):
+        return f"{self.first_name} {self.surname}"
