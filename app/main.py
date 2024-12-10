@@ -3,7 +3,7 @@ from typing import Annotated
 
 import uvicorn
 
-from fastapi import FastAPI, Form, HTTPException, File, UploadFile
+from fastapi import FastAPI, Form, HTTPException, File, UploadFile, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import ValidationError
 
@@ -12,6 +12,7 @@ from app.data.fake_dbs import feedbacks_db, fake_db
 from app.routes.navigate_strategy import navigate_info
 from app.models.user import User
 from app.models.feedback import Feedback
+from app.funct.test_functions import write_notification
 
 app = FastAPI()
 
@@ -101,6 +102,12 @@ async def create_file(file: Annotated[bytes, File()]):
 @app.post("/uploadfile/")
 async def create_upload_file(file: UploadFile):
     return {"filename": file.filename}
+
+
+@app.post("/send-notification/{email}")
+async def send_notification(email: str, background_tasks: BackgroundTasks):
+    background_tasks.add_task(write_notification, email, message="some notification")
+    return {"message": "Notification sent in the background"}
 
 # НЕОБХОДИМО РАЗОБРАТЬСЯ - КАКОЙ-ТО КОНФЛИКТ СО СХЕМАМИ - ПОДГРУЗКА ФАЙЛА ЧЕРЕЗ
 # ПОТОК БАЙТОВЫХ ДАННЫХ ??? ГУГЛИТЬ!!!
