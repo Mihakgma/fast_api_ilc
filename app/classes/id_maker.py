@@ -1,3 +1,6 @@
+from random import randint as random_randint
+
+
 class IdMaker:
     __classes_processed = dict()
 
@@ -15,4 +18,4 @@ class IdMaker:
             IdMaker.__classes_processed[class_name] = 1
         elif class_name in IdMaker.__classes_processed:
             IdMaker.__classes_processed[class_name] += 1
-        return IdMaker.__classes_processed[class_name]
+        return random_randint(1,999999)
