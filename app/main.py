@@ -3,7 +3,7 @@ from typing import Annotated
 
 import uvicorn
 
-from fastapi import FastAPI, Form, HTTPException, File, UploadFile, BackgroundTasks
+from fastapi import FastAPI, Form, HTTPException, File, UploadFile, BackgroundTasks, Cookie
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import ValidationError
 
@@ -108,6 +108,10 @@ async def create_upload_file(file: UploadFile):
 async def send_notification(email: str, background_tasks: BackgroundTasks):
     background_tasks.add_task(write_notification, email, message="some notification")
     return {"message": "Notification sent in the background"}
+
+@app.get("/items/")
+async def read_items(ads_id: str | None = Cookie(default=None)):
+    return {"ads_id": ads_id}
 
 # НЕОБХОДИМО РАЗОБРАТЬСЯ - КАКОЙ-ТО КОНФЛИКТ СО СХЕМАМИ - ПОДГРУЗКА ФАЙЛА ЧЕРЕЗ
 # ПОТОК БАЙТОВЫХ ДАННЫХ ??? ГУГЛИТЬ!!!
