@@ -4,7 +4,8 @@ from app.data.feed_key_words import positive_keywords, negative_keywords
 
 class Feedback(BaseModel):
     name: str
-    message: str
+    message: str | None = None
+    pc_ip_address: str | None = None
 
     @computed_field
     @property
