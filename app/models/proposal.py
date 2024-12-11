@@ -44,3 +44,9 @@ class Proposal(BaseModel):
     protocols: Set[Protocol] = set()
     eias: EiasNumber = None
     notes: AdditionalInfo | None = None
+
+    def __str__(self):
+        out = (f"Proposal ID: {self.id}\n"
+               f"Act code: {self.act_code}\n"
+               f"Lab code: {self.lab_code}\n")
+        return out

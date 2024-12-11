@@ -1,9 +1,11 @@
 import datetime
-from typing import Annotated
+import functools
+from typing import Annotated, List, Callable
 
 import uvicorn
 
-from fastapi import FastAPI, Form, HTTPException, File, UploadFile, BackgroundTasks, Cookie, Response
+from fastapi import (FastAPI, Form, HTTPException, File, UploadFile,
+                     BackgroundTasks, Cookie, Response, status, Depends)
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import ValidationError
 
@@ -15,6 +17,36 @@ from app.models.feedback import Feedback
 from app.funct.test_functions import write_notification
 
 app = FastAPI()
+
+
+# def check_permissions(required_roles: List[int]) -> Callable:
+#     """
+#     Decorator to check user permissions based on roles.
+#     """
+#
+#     def decorator(func: Callable):
+#         @functools.wraps(func)
+#         async def wrapper(*args, **kwargs):
+#             session_token = kwargs.get('session_token')  # Get the session token from kwargs if available.
+#
+#             if not session_token:
+#                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized: No session token.")
+#
+#             user = sessions.get(session_token)
+#             if not user:
+#                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+#                                     detail="Unauthorized: Invalid session token.")
+#
+#             # Check if the user has at least one of the required roles.
+#             if not any(role in user.roles for role in required_roles):
+#                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+#                                     detail="Forbidden: Insufficient permissions.")
+#
+#             return await func(*args, **kwargs)
+#
+#         return wrapper
+#
+#     return decorator
 
 
 @app.post('/feedback/')
@@ -104,10 +136,15 @@ async def create_upload_file(file: UploadFile):
     return {"filename": file.filename}
 
 
-@app.post("/send-notification/{email}")
-async def send_notification(email: str, background_tasks: BackgroundTasks):
-    background_tasks.add_task(write_notification, email, message="some notification")
-    return {"message": "Notification sent in the background"}
+# @app.post("/send-notification/{email}", dependencies=[Depends(check_permissions([4]))])
+# async def send_notification(email: str,
+#                             background_tasks: BackgroundTasks,
+#                             session_token: str = Cookie()):
+#     user = sessions.get(session_token)
+#     if user:
+#         background_tasks.add_task(write_notification, email, message="some notification")
+#         return {"message": "Notification sent in the background"}
+#     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
 
 @app.get("/items/")

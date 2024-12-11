@@ -2,7 +2,7 @@ from datetime import datetime, date
 from typing import List, Union
 
 # from fastapi.dependencies import models
-from pydantic import BaseModel, field_validator, computed_field
+from pydantic import BaseModel, field_validator, computed_field, Field
 
 from app.classes.id_maker import IdMaker
 from app.funct.refine_phone_number import refine_phone_number
@@ -10,17 +10,17 @@ from app.models.department import Department
 
 
 class User(BaseModel):
-
     id: int = IdMaker.get_id("User")
-    username: str = ""
+    username: str = "username"
     first_name: str = "Иван"
     surname: str = "Иванович"
     last_name: str = "Иванов"
-    birth_date: Union[datetime, None] = None
+    # birth_date: Union[datetime, None] = None
+    birth_date: Union[datetime, None] = Field(default=None, example='YYYY-MM-DD')
     email: str = "ivan_ivanch@sibir.ru"
     password: str = "1234"
     phone: str = "0123456789"
-    department: int = Department
+    department: Department | None = None
     roles: List[int] = [1, 2, 3]
     info: str = "some information"
 
@@ -66,3 +66,11 @@ class User(BaseModel):
 
     def __str__(self):
         return f"{self.first_name} {self.surname}"
+
+        # Add a method to convert birth_date to a string:
+
+    def model_dump(self, *args, **kwargs):
+        data = super().model_dump(*args, **kwargs)
+        if data['birth_date']:
+            data['birth_date'] = data['birth_date'].strftime('%Y-%m-%d')
+        return data
