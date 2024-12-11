@@ -12,6 +12,7 @@ from app.models.department import Department
 class User(BaseModel):
 
     id: int = IdMaker.get_id("User")
+    username: str = ""
     first_name: str = "Иван"
     surname: str = "Иванович"
     last_name: str = "Иванов"

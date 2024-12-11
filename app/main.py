@@ -3,7 +3,7 @@ from typing import Annotated
 
 import uvicorn
 
-from fastapi import FastAPI, Form, HTTPException, File, UploadFile, BackgroundTasks, Cookie
+from fastapi import FastAPI, Form, HTTPException, File, UploadFile, BackgroundTasks, Cookie, Response
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import ValidationError
 
@@ -109,15 +109,61 @@ async def send_notification(email: str, background_tasks: BackgroundTasks):
     background_tasks.add_task(write_notification, email, message="some notification")
     return {"message": "Notification sent in the background"}
 
+
 @app.get("/items/")
 async def read_items(ads_id: str | None = Cookie(default=None)):
     return {"ads_id": ads_id}
+
 
 # НЕОБХОДИМО РАЗОБРАТЬСЯ - КАКОЙ-ТО КОНФЛИКТ СО СХЕМАМИ - ПОДГРУЗКА ФАЙЛА ЧЕРЕЗ
 # ПОТОК БАЙТОВЫХ ДАННЫХ ??? ГУГЛИТЬ!!!
 # @app.post("/uploadfile/{file}/")
 # async def excel_df_info(file: UploadExcelFile):
 #     return {"df_info": file.df_info}
+
+# AUTHORIZATION AND AUTENTIFICATION
+# имитируем хранилище юзеров
+# создали тестового юзера, якобы он уже зарегистрирован у нас
+sample_user: dict = {"username": "user123", "password": "password123"}
+fake_db: list[User] = [User(**sample_user)]
+# имитируем хранилище сессий
+# типа Redis
+sessions: dict = {}
+
+
+# основная логика программы
+@app.post('/login')
+async def login(user: User, response: Response):
+    for person in fake_db:  # перебрали юзеров в нашем примере базы данных
+        if person.username == user.username and person.password == user.password:  # сверили логин и пароль
+            session_token = "abc123xyz456"
+            # тут можно использовать модуль uuid (в продакшене),
+            # или модуль random (для выполнения задания),
+            # или самому написать рандомное значение куки, т.к. это пример тестовый
+            sessions[
+                session_token] = user
+            # сохранили у себя в словаре сессию,
+            # где токен - это ключ, а значение - объект юзера
+            # тут установили куки с защищенным флагом httponly -
+            # недоступны для вредоносного JS; флаг secure означает, что куки идут только по HTTPS
+            response.set_cookie(key="session_token", value=session_token,
+                                httponly=True)
+            return {"message": "куки установлены"}
+    return {
+        # тут можно вернуть что хотите, в ТЗ не конкретезировалось, что делать, если логин/пароль неправильные
+        "message": "Invalid username or password"}
+
+
+@app.get('/user')
+async def user_info(session_token=Cookie()):
+    user = sessions.get(
+        session_token)  # ищем в сессиях был ли такой токен создан, и если был, то возвращаем связанного с ним юзера
+    if user:
+        # у pydantic моделей есть метод dict(), который делает словарь из модели.
+        # Можно сразу хранить словарь в сессии, не суть.
+        # Для Pydantic версии > 2 метод переименован в model_dump()
+        return user.dict()
+    return {"message": "Unauthorized"}
 
 
 if __name__ == "main":
