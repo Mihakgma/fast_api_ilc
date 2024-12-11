@@ -1,6 +1,7 @@
 import datetime
-import functools
-from typing import Annotated, List, Callable
+# import functools
+# from typing import Annotated, List, Callable
+from typing import Annotated
 
 import uvicorn
 
@@ -14,7 +15,7 @@ from app.data.fake_dbs import feedbacks_db, fake_db
 from app.routes.navigate_strategy import navigate_info
 from app.models.user import User
 from app.models.feedback import Feedback
-from app.funct.test_functions import write_notification
+# from app.funct.test_functions import write_notification
 
 app = FastAPI()
 
