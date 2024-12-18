@@ -8,6 +8,7 @@ import uvicorn
 from fastapi import (FastAPI, Form, HTTPException, File, UploadFile,
                      BackgroundTasks, Cookie, Response, status, Depends, Header, Request)
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import ValidationError
 import re
 
@@ -20,6 +21,7 @@ from app.models.feedback import Feedback
 # from app.funct.test_functions import write_notification
 
 app = FastAPI()
+security = HTTPBasic()
 
 
 # def check_permissions(required_roles: List[int]) -> Callable:
@@ -229,9 +231,34 @@ def check_headers(headers: Request.headers):
 async def get_headers(request: Request) -> dict:
     check_headers(request.headers)
     return {
-        "User-Agent" : request.headers["user-agent"],
+        "User-Agent": request.headers["user-agent"],
         "Accept-Language": request.headers["accept-language"]
     }
+
+
+# добавим симуляцию базы данных в виде массива объектов юзеров
+USER_DATA = [User(**{"username": "user1", "password": "pass1"}),
+             User(**{"username": "user2", "password": "pass2"}),
+             User(**{"username": "badya", "password": "bidon"})]
+
+
+def authenticate_user(credentials: HTTPBasicCredentials = Depends(security)):
+    user = get_user_from_db(credentials.username)
+    if user is None or user.password != credentials.password:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    return user
+
+
+def get_user_from_db(username: str):
+    for user in USER_DATA:
+        if user.username == username:
+            return user
+    return None
+
+
+@app.get("/protected_resource/")
+def get_protected_resource(user: User = Depends(authenticate_user)):
+    return {"message": "You have access to the protected resource!", "user_info": user}
 
 
 if __name__ == "main":
