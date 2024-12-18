@@ -6,15 +6,17 @@ from typing import Annotated
 import uvicorn
 
 from fastapi import (FastAPI, Form, HTTPException, File, UploadFile,
-                     BackgroundTasks, Cookie, Response, status, Depends)
+                     BackgroundTasks, Cookie, Response, status, Depends, Header, Request)
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import ValidationError
+import re
 
 from app.data.fake_dbs import feedbacks_db, fake_db
 # from app.models.upload_excel_file import UploadExcelFile
 from app.routes.navigate_strategy import navigate_info
 from app.models.user import User
 from app.models.feedback import Feedback
+
 # from app.funct.test_functions import write_notification
 
 app = FastAPI()
@@ -147,6 +149,10 @@ async def create_upload_file(file: UploadFile):
 #         return {"message": "Notification sent in the background"}
 #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
+@app.get("/items_annotated/")
+async def read_items(user_agent: Annotated[str | None, Header()] = None):
+    return {"User-Agent": user_agent}
+
 
 @app.get("/items/")
 async def read_items(ads_id: str | None = Cookie(default=None)):
@@ -202,6 +208,30 @@ async def user_info(session_token=Cookie()):
         # Для Pydantic версии > 2 метод переименован в model_dump()
         return user.dict()
     return {"message": "Unauthorized"}
+
+
+def check_headers(headers: Request.headers):
+    if "User-Agent" not in headers:
+        raise HTTPException(status_code=400, detail="The User-Agent header not found!")
+
+    if "Accept-Language" not in headers:
+        raise HTTPException(status_code=400, detail="The Accept-Language header not found!")
+
+    pattern = r"(?i:(?:\*|[a-z\-]{2,5})(?:;q=\d\.\d)?,)+(?:\*|[a-z\-]{2,5})(?:;q=\d\.\d)?"
+    if not re.fullmatch(pattern, headers["Accept-Language"]):
+        raise HTTPException(
+            status_code=400,
+            detail="The Accept-Language header is not in the correct format"
+        )
+
+
+@app.get("/headers")
+async def get_headers(request: Request) -> dict:
+    check_headers(request.headers)
+    return {
+        "User-Agent" : request.headers["user-agent"],
+        "Accept-Language": request.headers["accept-language"]
+    }
 
 
 if __name__ == "main":
