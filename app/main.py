@@ -188,26 +188,26 @@ sessions: dict = {}
 
 
 # основная логика программы
-@app.post('/login')
-async def login(user: User, response: Response):
-    for person in fake_db:  # перебрали юзеров в нашем примере базы данных
-        if person.username == user.username and person.password == user.password:  # сверили логин и пароль
-            session_token = "abc123xyz456"
-            # тут можно использовать модуль uuid (в продакшене),
-            # или модуль random (для выполнения задания),
-            # или самому написать рандомное значение куки, т.к. это пример тестовый
-            sessions[
-                session_token] = user
-            # сохранили у себя в словаре сессию,
-            # где токен - это ключ, а значение - объект юзера
-            # тут установили куки с защищенным флагом httponly -
-            # недоступны для вредоносного JS; флаг secure означает, что куки идут только по HTTPS
-            response.set_cookie(key="session_token", value=session_token,
-                                httponly=True)
-            return {"message": "куки установлены"}
-    return {
-        # тут можно вернуть что хотите, в ТЗ не конкретезировалось, что делать, если логин/пароль неправильные
-        "message": "Invalid username or password"}
+# @app.post('/login')
+# async def login(user: User, response: Response):
+#     for person in fake_db:  # перебрали юзеров в нашем примере базы данных
+#         if person.username == user.username and person.password == user.password:  # сверили логин и пароль
+#             session_token = "abc123xyz456"
+#             # тут можно использовать модуль uuid (в продакшене),
+#             # или модуль random (для выполнения задания),
+#             # или самому написать рандомное значение куки, т.к. это пример тестовый
+#             sessions[
+#                 session_token] = user
+#             # сохранили у себя в словаре сессию,
+#             # где токен - это ключ, а значение - объект юзера
+#             # тут установили куки с защищенным флагом httponly -
+#             # недоступны для вредоносного JS; флаг secure означает, что куки идут только по HTTPS
+#             response.set_cookie(key="session_token", value=session_token,
+#                                 httponly=True)
+#             return {"message": "куки установлены"}
+#     return {
+#         # тут можно вернуть что хотите, в ТЗ не конкретезировалось, что делать, если логин/пароль неправильные
+#         "message": "Invalid username or password"}
 
 
 @app.get('/user')
