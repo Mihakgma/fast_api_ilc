@@ -1,15 +1,19 @@
-import datetime
+# import datetime
 # import functools
 # from typing import Annotated, List, Callable
 from typing import Annotated
 
 import uvicorn
 
+import jwt
 from fastapi import (FastAPI, Form, HTTPException, File, UploadFile,
                      BackgroundTasks, Cookie, Response, status, Depends, Header, Request)
 from fastapi.responses import FileResponse, JSONResponse
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
 from pydantic import ValidationError
+from secrets import token_urlsafe
+from datetime import datetime, timedelta
+from passlib.context import CryptContext
 import re
 
 from app.data.fake_dbs import feedbacks_db, fake_db
@@ -22,6 +26,12 @@ from app.models.feedback import Feedback
 
 app = FastAPI()
 security = HTTPBasic()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+
+SECRET_KEY = token_urlsafe(16)
+ALGORITHM = "HS256"
+EXPIRATION_TIME = timedelta(minutes=3)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 # def check_permissions(required_roles: List[int]) -> Callable:
@@ -259,6 +269,47 @@ def get_user_from_db(username: str):
 @app.get("/protected_resource/")
 def get_protected_resource(user: User = Depends(authenticate_user)):
     return {"message": "You have access to the protected resource!", "user_info": user}
+
+
+USERS_DATA = [
+    {"username": "admin", "password": "adminpass"}
+]
+for dd in USERS_DATA:
+    dd["password"] = pwd_context.hash(dd["password"])
+
+
+def authenticate_user(username: str, password: str) -> bool:
+    for user in USERS_DATA:
+        if user["username"] == username:
+            return pwd_context.verify(password, user["password"])
+    return False
+
+
+def create_jwt_token(data: dict):
+    data.update({"exp": datetime.utcnow() + EXPIRATION_TIME})
+    return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def verify_jwt_token(token: str = Depends(oauth2_scheme)):
+    try:
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="The token has expired")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+@app.post("/login")
+async def login(user_in: User):
+    if authenticate_user(user_in.username, user_in.password):
+        return {"access_token": create_jwt_token({"sub": user_in.username}), "token_type": "bearer"}
+    raise HTTPException(status_code=401, detail="Invalid credentials")
+
+
+@app.get("/protected_resource")
+async def about_me(verified_user: dict = Depends(verify_jwt_token)):
+    if verified_user:
+        return {'message': 'Access to the protected resource is allowed'}
 
 
 if __name__ == "main":
