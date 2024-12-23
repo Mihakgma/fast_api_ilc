@@ -129,7 +129,7 @@ async def create_new_user(first_name: str = Form(),
                           birth_date: str = Form(),
                           phone: str = Form(), ):
     try:
-        birth_date = datetime.datetime.fromisoformat(birth_date)  # Explicit conversion
+        birth_date = datetime.fromisoformat(birth_date)  # Explicit conversion
         user = User(first_name=first_name, birth_date=birth_date, phone=phone)
         user_info = "   ".join([f"{k}: {v}" for (k, v) in user.dict().items()])
         return {"user_info: ": user_info}
